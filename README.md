@@ -22,5 +22,5 @@ La idea es simular una pequeña red social, donde los usuarios puedan registrars
 - **Zod** – Validaciones
 - **JWT** – Autenticación
 - **PostgreSQL** (a integrar)
-- **OAuth (Google)** (planificado)
+- **OAuth** (planificado)
 

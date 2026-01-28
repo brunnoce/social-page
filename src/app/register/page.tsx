@@ -3,6 +3,9 @@
 import { useState } from "react"
 import { RegisterData, registerSchema } from "@/lib/validations/auth"
 import Link from "next/link"
+import { apiFetch } from "@/lib/http"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth/use-auth"
 
 export default function RegisterPage() {
   const [form, setForm] = useState<RegisterData>({
@@ -16,10 +19,12 @@ export default function RegisterPage() {
   const [status, setStatus] =
     useState<"idle" | "loading" | "error" | "success">("idle")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const router = useRouter()
+  const { refresh } = useAuth()
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrors({})
-    setStatus("idle")
 
     const result = registerSchema.safeParse(form)
 
@@ -37,7 +42,20 @@ export default function RegisterPage() {
 
     setStatus("loading")
 
-    // luego llamada al backend
+    const res = await apiFetch<{ user: any }>("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify(form),
+    })
+
+    if (!res.ok) {
+      setStatus("error")
+      setErrors({ general: res.error ?? "Error al crear la cuenta" })
+      return
+    }
+
+    await refresh()
+    router.push("/")
+
   }
 
   return (
@@ -155,15 +173,9 @@ export default function RegisterPage() {
             : "Registrarse"}
         </button>
 
-        {status === "error" && (
+        {errors.general && (
           <p className="text-sm text-red-600 text-center">
-            Error al crear la cuenta
-          </p>
-        )}
-
-        {status === "success" && (
-          <p className="text-sm text-green-600 text-center">
-            Cuenta creada correctamente 🎉
+            {errors.general}
           </p>
         )}
 

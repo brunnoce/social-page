@@ -3,6 +3,9 @@
 import { useState } from "react"
 import { LoginData, loginSchema } from "@/lib/validations/auth"
 import Link from "next/link"
+import { apiFetch } from "@/lib/http"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth/use-auth"
 
 export default function LoginPage() {
   const [form, setForm] = useState<LoginData>({
@@ -14,10 +17,13 @@ export default function LoginPage() {
   const [status, setStatus] =
     useState<"idle" | "loading" | "error" | "success">("idle")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const router = useRouter()
+  const { refresh } = useAuth()
+  
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrors({})
-    setStatus("idle")
+    setStatus("loading")
 
     const result = loginSchema.safeParse(form)
 
@@ -35,7 +41,19 @@ export default function LoginPage() {
 
     setStatus("loading")
 
-    // acá luego irá el fetch real al backend
+    const res = await apiFetch<null>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify(form),
+    })
+
+    if (!res.ok) {
+      setStatus("error")
+      setErrors({ general: res.error ?? "Error inesperado" })
+      return
+    }
+
+    await refresh()
+    router.push("/")
   }
 
   return (
@@ -103,9 +121,9 @@ export default function LoginPage() {
           {status === "loading" ? "Ingresando..." : "Ingresar"}
         </button>
 
-        {status === "error" && (
+        {errors.general && (
           <p className="text-sm text-red-600 text-center">
-            Credenciales inválidas
+            {errors.general}
           </p>
         )}
 

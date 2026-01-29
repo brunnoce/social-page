@@ -4,6 +4,7 @@ export type AuthUser = {
   id: string
   username: string
   email: string
+  bio: string | null
 }
 
 export type AuthContextType = {
@@ -13,5 +14,4 @@ export type AuthContextType = {
   refresh: () => Promise<void>
 }
 
-export const AuthContext =
-  createContext<AuthContextType | null>(null)
+export const AuthContext = createContext<AuthContextType | null>(null)

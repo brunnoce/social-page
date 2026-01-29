@@ -34,6 +34,7 @@ export async function GET() {
           id: user.id,
           username: user.username,
           email: user.email,
+          bio: user.bio
         },
       },
     })

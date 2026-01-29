@@ -13,8 +13,7 @@ export const loginSchema = z.object({
 
 export type LoginData = z.infer<typeof loginSchema>
 
-export const registerSchema = z
-  .object({
+export const registerSchema = z.object({
     username: z
       .string()
       .min(6, "El username debe tener al menos 6 caracteres")
@@ -53,3 +52,14 @@ export const registerSchema = z
   })
 
 export type RegisterData = z.infer<typeof registerSchema>
+
+export const bioSchema = z.object({
+  bio: z.
+    string()
+    .min(1, "La bio no puede estar vacía")
+    .max(300, "Máximo 300 caracteres permitidos")
+    .nullable(),
+})
+
+export type BioData = z.infer<typeof bioSchema>
+

@@ -15,9 +15,7 @@ export function AuthProvider({
   const refresh = async () => {
     setLoading(true)
 
-    const res = await apiFetch<{ user: AuthUser }>(
-      "/api/auth/me"
-    )
+    const res = await apiFetch<{ user: AuthUser }>("/api/auth/me")
 
     if (res.ok) {
       setUser(res.data.user)

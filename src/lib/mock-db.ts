@@ -6,4 +6,12 @@ type User = {
   passwordHash: string
 }
 
+type Post = {
+  id: string
+  body: string
+  createdAt: Date
+  userId: string
+}
+
 export const users: User[] = []
+export const posts: Post[] = []

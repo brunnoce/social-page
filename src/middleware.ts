@@ -7,6 +7,10 @@ export function middleware(req: NextRequest) {
   const token = req.cookies.get("auth-token")?.value
   const isLoggedIn = Boolean(token)
 
+  if (pathname.startsWith("/api")) { 
+    return NextResponse.next()
+  }
+
   // 1. Proteger /profile/*
   if (pathname.startsWith("/profile")) {
     if (!isLoggedIn) {

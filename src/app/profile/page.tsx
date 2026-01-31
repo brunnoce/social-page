@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth/use-auth"
 import { useState, useEffect } from "react"
 import { apiFetch } from "@/lib/http"
 import { useRouter } from "next/navigation"
+import { PublicPost } from "@/lib/types/post"
 
 export default function ProfilePage() {
   const { user, loading, refresh } = useAuth()
@@ -17,6 +18,9 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
+  const [posts, setPosts] = useState<PublicPost[]>([])
+  const [postsLoading, setPostsLoading] = useState(true)
+
   // TODOS LOS HOOKS AL PRINCIPIO
   useEffect(() => {
     if (user) {
@@ -25,6 +29,26 @@ export default function ProfilePage() {
         bio: user.bio ?? "",
       })
     }
+  }, [user])
+
+  useEffect(() => {
+    if (!user) return
+  
+    const fetchPosts = async () => {
+      setPostsLoading(true)
+  
+      const res = await apiFetch<{ profile: { posts: PublicPost[] } }>(
+        `/api/users/${user.username}` //username del usuario logueado
+      )
+  
+      if (res.ok) {
+        setPosts(res.data.profile.posts)
+      }
+  
+      setPostsLoading(false)
+    }
+  
+    fetchPosts()
   }, [user])
 
   // RETURNS CONDICIONALES AL FINAL
@@ -156,9 +180,28 @@ export default function ProfilePage() {
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
 
-        <div className="border-t pt-6">
+        <div className="border-t pt-6 space-y-4">
           <h2 className="text-lg font-semibold text-gray-900">Posts</h2>
-          <p className="mt-2 text-sm text-gray-500">Próximamente...</p>
+
+          {postsLoading ? (
+            <p className="text-sm text-gray-500">Cargando posts...</p>
+          ) : posts.length === 0 ? (
+            <p className="text-sm text-gray-500">
+              Este usuario todavía no publicó nada
+            </p>
+          ) : (
+            posts.map(post => (
+              <div
+                key={post.id}
+                className="rounded-lg border p-4 text-sm text-gray-800"
+              >
+                <p>{post.body}</p>
+                <p className="mt-2 text-xs text-gray-400">
+                  {new Date(post.createdAt).toLocaleString()}
+                </p>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

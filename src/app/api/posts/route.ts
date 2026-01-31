@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server"
 import { getAuthUser } from "@/lib/auth"
-import { ApiResponse } from "@/lib/api"
+import type { ApiResponse } from "@/lib/api"
 import { createPostSchema } from "@/lib/validations/posts"
 import { posts, users } from "@/lib/mock-db"
-import { PublicPost } from "@/lib/types/post"
+import type { PublicPost } from "@/lib/types/post"
 
+/**
+ * Crear post (requiere auth)
+ */
 export async function POST(req: Request) {
-  // Auth
+  // 1. Auth
   const user = await getAuthUser()
 
   if (!user) {
@@ -16,7 +19,7 @@ export async function POST(req: Request) {
     )
   }
 
-  // Body + validación
+  // 2. Body + validación
   const body = await req.json()
   const parsed = createPostSchema.safeParse(body)
 
@@ -27,7 +30,7 @@ export async function POST(req: Request) {
     )
   }
 
-  // Crear post
+  // 3. Crear post
   const newPost = {
     id: crypto.randomUUID(),
     body: parsed.data.body,
@@ -37,7 +40,7 @@ export async function POST(req: Request) {
 
   posts.push(newPost)
 
-  // Adaptar a PublicPost (contrato)
+  // 4. Adaptar a contrato público
   const publicPost: PublicPost = {
     id: newPost.id,
     body: newPost.body,
@@ -48,14 +51,17 @@ export async function POST(req: Request) {
     },
   }
 
+  // 5. Respuesta
   return NextResponse.json<ApiResponse<{ post: PublicPost }>>({
     ok: true,
     data: { post: publicPost },
   })
 }
 
+/**
+ * Obtener posts (público)
+ */
 export async function GET() {
-  // ordenar por fecha (más nuevos primero)
   const sorted = [...posts].sort(
     (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
   )
